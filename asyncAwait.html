@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch API Async/Await</title>
+</head>
+<body>
+    <div id="result"></div>
+    <script>
+        const fetchFile = async (url) => {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Ошибка при загрузке файла: ${url}`);
+                }
+                const text = await response.text();
+                return text;
+            } catch (error) {
+                console.error(error);
+                return null;
+            }
+        };
+
+        const processFile = async (url) => {
+            const content = await fetchFile(url);
+            if (!content) return '';
+
+            try {
+                const json = JSON.parse(content);
+                const promises = json.map(file => processFile(`https://fe.it-academy.by/Examples/words_tree/${file}`));
+                const phrases = await Promise.all(promises);
+                return phrases.join(' ');
+            } catch (e) {
+                return content;
+            }
+        };
+
+        const main = async () => {
+            const result = await processFile('https://fe.it-academy.by/Examples/words_tree/root.txt');
+            document.getElementById('result').innerText = result;
+        };
+
+        main();
+    </script>
+</body>
+</html>
