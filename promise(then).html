@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch API then()</title>
+</head>
+<body>
+    <div id="result"></div>
+    <script>
+        function fetchFile(url) {
+            return fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Ошибка при загрузке файла: ${url}`);
+                    }
+                    return response.text();
+                })
+                .catch(error => {
+                    console.error(error);
+                    return null;
+                });
+        }
+
+        function processFile(url) {
+            return fetchFile(url).then(content => {
+                if (!content) return '';
+                try {
+                    var json = JSON.parse(content);
+                    var promises = json.map(function(file) {
+                        return processFile(`https://fe.it-academy.by/Examples/words_tree/${file}`);
+                    });
+                    return Promise.all(promises).then(function(phrases) {
+                        return phrases.join(' ');
+                    });
+                } catch (e) {
+                    return content;
+                }
+            });
+        }
+
+        function main() {
+            processFile('https://fe.it-academy.by/Examples/words_tree/root.txt').then(function(result) {
+                document.getElementById('result').innerText = result;
+            });
+        }
+
+        main();
+    </script>
+</body>
+</html>
